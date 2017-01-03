@@ -1,0 +1,24 @@
+{
+  "name": "daily-digest",
+  "version": "1.0.0",
+  "description": "An app to help you reflect on your daily experience at work",
+  "main": "server.js",
+  "dependencies": {},
+  "devDependencies": {
+    "twilio": "^2.11.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://IsaacDurand@github.com/IsaacDurand/daily-digest.git"
+  },
+  "author": "IsaacDurand",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IsaacDurand/daily-digest/issues"
+  },
+  "homepage": "https://github.com/IsaacDurand/daily-digest#readme"
+}
