@@ -12,6 +12,7 @@ Now that I live in LA, I don't ride Caltrain any more - I either drive or walk t
 * If I respond, the app will send me a second text message: "What did you enjoy doing least at work today?"
 * I will be able to respond to this message and save that response too.
 * I will be able to go to a website to see a record of my previous responses.
+
 ### Other features I may build
 * Any user will be able to create an account on the app. Users will be able to see only their own responses - not anybody else's.
 * Every Saturday (or perhaps on Monday mornings), the app will email users a summary of their responses for the previous week.
