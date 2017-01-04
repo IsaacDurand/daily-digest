@@ -5,6 +5,7 @@
   "main": "server.js",
   "dependencies": {},
   "devDependencies": {
+    "body-parser": "^1.15.2",
     "express": "^4.14.0",
     "twilio": "^2.11.1"
   },
