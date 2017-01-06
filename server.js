@@ -1,4 +1,5 @@
 var http = require('http');
+var fs = require('fs');
 var express = require('express');
 
 // When the interpreter sees 'require('twilio')', it looks for the module ID for
@@ -15,6 +16,7 @@ var app = express();
 // we don't have to send and receive HTTP requests manually. It's a layer of
 // abstraction.
 var client = twilio(secrets.accountSid, secrets.authToken);
+var messageDatabase = __dirname + '/messages.txt';
 var options = {root: __dirname};
 var statusCallback = '/status-update';
 
@@ -41,6 +43,7 @@ app.get('/main.js', function(req, res) {
 
 app.use(bodyParser.json());
 
+// Allow the user to send an SMS via a form on the website
 app.post('/', function(req, res) {
   var message = req.body.message;
 
@@ -54,6 +57,13 @@ app.post('/', function(req, res) {
       statusCallback: secrets.ngrokUrl + statusCallback
     }, function(err, message) {
       if (!err) {
+
+        // Add messages successfully sent to Twilio to my "database"
+        // console.log(message);
+        fs.appendFile(messageDatabase, message.sid + '\n');
+        fs.appendFile(messageDatabase, message.body + '\n');
+        fs.appendFile(messageDatabase, JSON.stringify(message) + '\n');
+
         // The message object contains a lot of information about the SMS I just
         // created. However, it doesn't indicate whether the message was
         // actually sent - only that it was queued.
