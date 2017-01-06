@@ -16,8 +16,14 @@ var app = express();
 // we don't have to send and receive HTTP requests manually. It's a layer of
 // abstraction.
 var client = twilio(secrets.accountSid, secrets.authToken);
-var messageDatabase = __dirname + '/messages.txt';
+var jsonParser = bodyParser.json();
+var urlEncodedParser = bodyParser.urlencoded({extended: false});
+
+var databaseRoot = __dirname + '/database';
+var messageDatabase = databaseRoot + '/messages.txt';
+var statusDatabase = databaseRoot + '/updates.txt';
 var options = {root: __dirname};
+var record;
 var statusCallback = '/status-update';
 
 // console.log(client); // has a lot of stuff :)
@@ -41,10 +47,8 @@ app.get('/main.js', function(req, res) {
   res.sendFile('main.js', options);
 });
 
-app.use(bodyParser.json());
-
 // Allow the user to send an SMS via a form on the website
-app.post('/', function(req, res) {
+app.post('/', jsonParser, function(req, res) {
   var message = req.body.message;
 
   if (message) {
@@ -60,13 +64,12 @@ app.post('/', function(req, res) {
 
         // Add messages successfully sent to Twilio to my "database"
         // console.log(message);
-        fs.appendFile(messageDatabase, message.sid + '\n');
-        fs.appendFile(messageDatabase, message.body + '\n');
-        fs.appendFile(messageDatabase, JSON.stringify(message) + '\n');
-
-        // The message object contains a lot of information about the SMS I just
-        // created. However, it doesn't indicate whether the message was
-        // actually sent - only that it was queued.
+        // The message object contains a lot of information about the message
+        // Twilio created, including whether it has been queued, but not
+        // whether it has been sent.
+        record = message.sid + '\n' + message.body + '\n' +
+          JSON.stringify(message) + '\n\n';
+        fs.appendFile(messageDatabase, record);
       }
     });
   }
@@ -75,11 +78,17 @@ app.post('/', function(req, res) {
   res.send('message received');
 });
 
-app.post(statusCallback, function(req, res) {
+app.post(statusCallback, urlEncodedParser, function(req, res) {
+  if (!req.body) return res.sendStatus(400);
+  // console.log(req.body);
 
-  // TODO: Parse this status update
-  console.log('status update received from Twilio');
-  res.status(200).end();
+  // What is the difference between SmsStatus and MessageStatus?
+  // What about SmsSid vs. MessageSid?
+  if (req.body.SmsStatus === 'delivered') {
+    record = req.body.SmsSid + '\n' + JSON.stringify(req.body) + '\n\n';
+    fs.appendFile(statusDatabase, record);
+  }
+  res.sendStatus(200);
 })
 
 // TODO: See if this is still working. Where did I get the code from?
