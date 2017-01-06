@@ -16,6 +16,7 @@ var app = express();
 // abstraction.
 var client = twilio(secrets.accountSid, secrets.authToken);
 var options = {root: __dirname};
+var statusCallback = '/status-update';
 
 // console.log(client); // has a lot of stuff :)
 // console.log(client.messages); // has get, list, post, and create methods
@@ -24,11 +25,11 @@ var options = {root: __dirname};
 
 // Show all messages associated with this account
 // See https://www.twilio.com/docs/api/rest/message
-client.messages.list(function(err, data) {
-    data.messages.forEach(function(message) {
-        console.log(message.body);
-    });
-});
+// client.messages.list(function(err, data) {
+//     data.messages.forEach(function(message) {
+//         console.log(message.body);
+//     });
+// });
 
 app.get('/', function(req, res) {
   res.sendFile('index.html', options);
@@ -50,11 +51,7 @@ app.post('/', function(req, res) {
       to: secrets.myMobileNumber,
       from: secrets.myTwilioNumber,
       body: message,
-      // Is there any way I can use the statusCallback option before actually
-      // deploying this?
-      // With the setup below, I can see in Request Bin that my SMS was
-      // successfully delivered.
-      statusCallback: secrets.requestBinUrl
+      statusCallback: secrets.ngrokUrl + statusCallback
     }, function(err, message) {
       if (!err) {
         // The message object contains a lot of information about the SMS I just
@@ -66,10 +63,16 @@ app.post('/', function(req, res) {
 
   // TODO: Show success message on front end, or at least improve this response.
   res.send('message received');
-
-  // TODO: See list of the messages I've sent
 });
 
+app.post(statusCallback, function(req, res) {
+
+  // TODO: Parse this status update
+  console.log('status update received from Twilio');
+  res.status(200).end();
+})
+
+// TODO: See if this is still working. Where did I get the code from?
 app.post('/sms', function(req, res) {
   var twiml = new twilio.TwimlResponse();
   twiml.message('The Robots are coming! Head for the hills!');
