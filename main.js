@@ -5,11 +5,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   formEl.addEventListener('submit', function(e) {
     e.preventDefault();
-    var inputValue = inputEl.value;
+    var data = JSON.stringify({message: inputEl.value});
     var request = new XMLHttpRequest();
     request.open('POST', '/');
-    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    request.send(inputValue);
+    request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    request.send(data);
     inputEl.value = '';
   });
 });
