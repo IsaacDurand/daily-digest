@@ -1,10 +1,19 @@
 var http = require('http');
 var express = require('express');
+
+// When the interpreter sees 'require('twilio')', it looks for the module ID for
+// twilio, which is specified in the "main" field of twilio's package.json.
+// Since twilio's package.json specifies a folder (lib), the interpreter runs
+// lib/index.js.
 var twilio = require('twilio');
 var bodyParser = require('body-parser');
 var secrets = require('./secrets.js');
 
 var app = express();
+
+// Basically, this client communicates with the Twilio REST API for us so that
+// we don't have to send and receive HTTP requests manually. It's a layer of
+// abstraction.
 var client = twilio(secrets.accountSid, secrets.authToken);
 var options = {root: __dirname};
 
@@ -12,6 +21,14 @@ var options = {root: __dirname};
 // console.log(client.messages); // has get, list, post, and create methods
 // I think this basically lets us interact with the Messages list resource.
 // We can easily get a message if we have its SID - but what if we don't?
+
+// Show all messages associated with this account
+// See https://www.twilio.com/docs/api/rest/message
+client.messages.list(function(err, data) {
+    data.messages.forEach(function(message) {
+        console.log(message.body);
+    });
+});
 
 app.get('/', function(req, res) {
   res.sendFile('index.html', options);
