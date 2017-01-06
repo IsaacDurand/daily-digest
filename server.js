@@ -20,7 +20,8 @@ var jsonParser = bodyParser.json();
 var urlEncodedParser = bodyParser.urlencoded({extended: false});
 
 var databaseRoot = __dirname + '/database';
-var messageDatabase = databaseRoot + '/messages.txt';
+var inboundMsgDb = databaseRoot + '/inbound-messages.txt';
+var outboundMsgDb = databaseRoot + '/outbound-messages.txt';
 var statusDatabase = databaseRoot + '/updates.txt';
 var options = {root: __dirname};
 var record;
@@ -69,7 +70,7 @@ app.post('/', jsonParser, function(req, res) {
         // whether it has been sent.
         record = message.sid + '\n' + message.body + '\n' +
           JSON.stringify(message) + '\n\n';
-        fs.appendFile(messageDatabase, record);
+        fs.appendFile(outboundMsgDb, record);
       }
     });
   }
@@ -78,10 +79,11 @@ app.post('/', jsonParser, function(req, res) {
   res.send('message received');
 });
 
+// Update my "database" when I receive an SMS delivery notification from Twilio
 app.post(statusCallback, urlEncodedParser, function(req, res) {
   if (!req.body) return res.sendStatus(400);
-  // console.log(req.body);
 
+  // console.log(req.body);
   // What is the difference between SmsStatus and MessageStatus?
   // What about SmsSid vs. MessageSid?
   if (req.body.SmsStatus === 'delivered') {
@@ -91,8 +93,19 @@ app.post(statusCallback, urlEncodedParser, function(req, res) {
   res.sendStatus(200);
 })
 
-// TODO: See if this is still working. Where did I get the code from?
-app.post('/sms', function(req, res) {
+// Add SMS messages I receive through Twilio to my "database"
+app.post('/sms', urlEncodedParser, function(req, res) {
+
+  // console.log(req.body);
+  if (req.body) {
+    record = req.body.SmsSid + '\n' + req.body.Body + '\n' +
+      JSON.stringify(req.body) + '\n\n';
+    fs.appendFile(inboundMsgDb, record);
+  }
+
+  // This is from https://www.twilio.com/docs/quickstart/node/programmable-sms
+  // #receiving-sms-messages
+  // TODO: log these outbound messsages?
   var twiml = new twilio.TwimlResponse();
   twiml.message('The Robots are coming! Head for the hills!');
   res.writeHead(200, {'Content-Type': 'text/xml'});
