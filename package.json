@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "An app to help you reflect on your daily experience at work",
   "main": "server.js",
-  "dependencies": {},
+  "dependencies": {
+    "mysql": "^2.12.0",
+    "sequelize": "^3.29.0"
+  },
   "devDependencies": {
     "body-parser": "^1.15.2",
     "express": "^4.14.0",

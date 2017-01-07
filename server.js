@@ -1,6 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var express = require('express');
+var Sequelize = require('sequelize');
 
 // When the interpreter sees 'require('twilio')', it looks for the module ID for
 // twilio, which is specified in the "main" field of twilio's package.json.
@@ -11,6 +12,8 @@ var bodyParser = require('body-parser');
 var secrets = require('./secrets.js');
 
 var app = express();
+var sequelize = new Sequelize('daily_debrief', secrets.database.username,
+ secrets.database.password);
 
 // Basically, this client communicates with the Twilio REST API for us so that
 // we don't have to send and receive HTTP requests manually. It's a layer of
@@ -26,6 +29,15 @@ var statusDatabase = databaseRoot + '/updates.txt';
 var options = {root: __dirname};
 var record;
 var statusCallback = '/status-update';
+
+// Test the database connection
+sequelize.authenticate()
+  .then(function(err) {
+    console.log('Connection has been established successfully.');
+  })
+  .catch(function (err) {
+    console.log('Unable to connect to the database:', err);
+  });
 
 // console.log(client); // has a lot of stuff :)
 // console.log(client.messages); // has get, list, post, and create methods
