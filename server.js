@@ -39,6 +39,66 @@ sequelize.authenticate()
     console.log('Unable to connect to the database:', err);
   });
 
+// Database
+// TODO: Turn off database logging in Terminal if I don't want it.
+// Define a user model
+var User = sequelize.define('user', {
+  name: {
+    allowNull: false,
+    type: Sequelize.STRING,
+  },
+  phoneNumber: {
+    primaryKey: true,
+    type: Sequelize.STRING,
+    validate: {
+      is: /[0-9]{10}/
+    }
+  }
+});
+
+// TODO: remove the force option if I don't want to delete the table
+User.sync({force: true})
+  .then(function() {
+    // console.log('User table created');
+
+    // This should succeed
+    User.create({
+      name: 'Isaac',
+      phoneNumber: secrets.myMobileNumberShort
+    });
+
+    // This should succeed
+    User.create({
+      name: 'Isaac',
+      phoneNumber: '5555555555'
+    });
+
+    // This should fail
+    User.create({
+      name: 'Charles',
+      phoneNumber: secrets.myMobileNumberShort
+    });
+
+    // This should fail
+    User.create({
+      name: 'Zach',
+      phoneNumber: 123456789
+    });
+
+    // This should fail
+    User.create({
+      name: 'Ike'
+    });
+
+    // This should fail
+    User.create({
+      phoneNumber: '8001234567'
+    })
+  })
+  .catch(function(err) {
+    console.log('Error:', err);
+  });
+
 // console.log(client); // has a lot of stuff :)
 // console.log(client.messages); // has get, list, post, and create methods
 // I think this basically lets us interact with the Messages list resource.
