@@ -56,48 +56,72 @@ var User = sequelize.define('user', {
   }
 });
 
-// TODO: remove the force option if I don't want to delete the table
-User.sync({force: true})
-  .then(function() {
-    // console.log('User table created');
+// TODO: Define an exchange model
+var Exchange = sequelize.define('exchange', {
+  date: {
+    type: Sequelize.DATEONLY,
+    defaultValue: Sequelize.NOW
+  },
+  // TODO: Think about whether it makes sense to use foreign keys here
+  //(especially for questions, which will be repeated)
+  // I don't want questionText to be null, but I suppose it's possible that I
+  // could send a blank SMS.
+  questionText: {
+    type: Sequelize.STRING
+  },
+  questionMessageSid: {
+    allowNull: false,
+    type: Sequelize.STRING,
+    // https://support.twilio.com/hc/en-us/articles/223134387-What-is-a-Message-SID-
+    validate: {
+      is: /SM[a-z0-9]{32}/
+    }
+  },
+  answerText: {
+    type: Sequelize.STRING
+  },
+  answerMessageSid: {
+    allowNull: false,
+    type: Sequelize.STRING,
+    validate: {
+      is: /SM[0-9a-z]{32}/
+    }
+  }
+});
 
-    // This should succeed
+// TODO: remove the force option if I don't want to delete the table
+sequelize.sync({force: true})
+  .then(function() {
     User.create({
       name: 'Isaac',
       phoneNumber: secrets.myMobileNumberShort
     });
-
-    // This should succeed
     User.create({
-      name: 'Isaac',
+      name: 'TestUser',
       phoneNumber: '5555555555'
     });
-
-    // This should fail
-    User.create({
-      name: 'Charles',
-      phoneNumber: secrets.myMobileNumberShort
-    });
-
-    // This should fail
-    User.create({
-      name: 'Zach',
-      phoneNumber: 123456789
-    });
-
-    // This should fail
-    User.create({
-      name: 'Ike'
-    });
-
-    // This should fail
-    User.create({
-      phoneNumber: '8001234567'
+    Exchange.create({
+      questionText: 'Sent from your Twilio trial account - The Robots are coming! Head for the hills!',
+      questionMessageSid: 'SMc509fec438cc4660f63de77bf608bbf0',
+      answerText: 'Again, boy is not body',
+      answerMessageSid: 'SM798a525dcf7263f22fea639ccba2f3bd',
+      userPhoneNumber: secrets.myMobileNumberShort // This seems to work
     })
   })
   .catch(function(err) {
     console.log('Error:', err);
   });
+
+// Useful: http://docs.sequelizejs.com/en/latest/docs/associations/
+// I won't see an error if I omit the line below, but the exchange will save
+// without a userPhoneNumber column.
+// TODO: Change name of userPhoneNumber column to user and show user's name
+// instead of phone number?
+Exchange.belongsTo(User);
+// TODO: Change name of exchangeId column to currentExchange, and understand
+// constraints better.
+User.belongsTo(Exchange, {constraints: false});
+// TODO: look at the SQL being generated to really understand what's going on
 
 // console.log(client); // has a lot of stuff :)
 // console.log(client.messages); // has get, list, post, and create methods
