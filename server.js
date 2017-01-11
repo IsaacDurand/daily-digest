@@ -89,39 +89,33 @@ var Exchange = sequelize.define('exchange', {
   }
 });
 
+// Useful: http://docs.sequelizejs.com/en/latest/docs/associations/
+// TODO: Is there any way for me to see the related user's name in the Exchange
+// table rather than their phone number?
+Exchange.belongsTo(User, {
+  foreignKey: {
+    name: 'UserPhoneNumber',
+    allowNull: false
+  }
+});
+// TODO: Understand constraints better.
+User.belongsTo(Exchange, {
+  as: 'CurrentExchange',
+  constraints: false
+});
+// TODO: What SQL is being generated here? In Terminal, I'm seeing the SQL
+// statements for inserting rows, but I'm not seeing the table creation.
+
 // TODO: remove the force option if I don't want to delete the table
+// TODO: How do I get all this chaining under control?
 sequelize.sync({force: true})
   .then(function() {
-    User.create({
-      name: 'Isaac',
-      phoneNumber: secrets.myMobileNumberShort
-    });
-    User.create({
-      name: 'TestUser',
-      phoneNumber: '5555555555'
-    });
-    Exchange.create({
-      questionText: 'Sent from your Twilio trial account - The Robots are coming! Head for the hills!',
-      questionMessageSid: 'SMc509fec438cc4660f63de77bf608bbf0',
-      answerText: 'Again, boy is not body',
-      answerMessageSid: 'SM798a525dcf7263f22fea639ccba2f3bd',
-      userPhoneNumber: secrets.myMobileNumberShort // This seems to work
-    })
+    console.log("\tTables are created. It's now safe to use them.");
+    // TODO: Right about here, start saving actual messages.
+    createExampleUsers();
   })
-  .catch(function(err) {
-    console.log('Error:', err);
-  });
+  .catch(logError);
 
-// Useful: http://docs.sequelizejs.com/en/latest/docs/associations/
-// I won't see an error if I omit the line below, but the exchange will save
-// without a userPhoneNumber column.
-// TODO: Change name of userPhoneNumber column to user and show user's name
-// instead of phone number?
-Exchange.belongsTo(User);
-// TODO: Change name of exchangeId column to currentExchange, and understand
-// constraints better.
-User.belongsTo(Exchange, {constraints: false});
-// TODO: look at the SQL being generated to really understand what's going on
 
 // console.log(client); // has a lot of stuff :)
 // console.log(client.messages); // has get, list, post, and create methods
@@ -211,3 +205,51 @@ app.post('/sms', urlEncodedParser, function(req, res) {
 http.createServer(app).listen(1337, function () {
   console.log("Express server listening on port 1337");
 });
+
+function logError(err) {
+  console.log('An error has occurred:\n', err);
+}
+
+function createExampleUsers() {
+  User.create({
+    name: 'Isaac',
+    phoneNumber: secrets.myMobileNumberShort
+  });
+  User.create({
+    name: 'TestUser',
+    phoneNumber: '5555555555'
+  });
+
+  Exchange.create({
+    questionText: 'Sent from your Twilio trial account - The Robots are coming! Head for the hills!',
+    questionMessageSid: 'SMc509fec438cc4660f63de77bf608bbf0',
+    answerText: 'Again, boy is not body',
+    answerMessageSid: 'SM798a525dcf7263f22fea639ccba2f3bd',
+    UserPhoneNumber: secrets.myMobileNumberShort // This seems to work
+  })
+    .then(function(exchange) {
+      // Get this user
+      User.findOne({
+        where: {phoneNumber: exchange.get('UserPhoneNumber')}
+      })
+        .then(function(user) {
+          // user will be null if no match is found
+          if (user) {
+            user.setCurrentExchange(exchange)
+              .then(function(user) {
+                console.log('As you can see, user has been updated:\n',
+                  user.get());
+              })
+              .catch(logError);
+          }
+        });
+
+      // Save their currentExchange
+
+      // console.log(exchange.get()); // seems identical to exchange.dataValues
+      // TODO: How are these two different?
+      // console.log(exchange.get('UserPhoneNumber'));
+      // console.log(exchange.getDataValue('UserPhoneNumber'));
+    })
+    .catch(logError);
+}
