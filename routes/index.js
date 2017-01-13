@@ -3,7 +3,10 @@ var express = require('express');
 var router = express.Router();
 
 router.get('/', function(req, res) {
-  res.send('Router seems to be working!');
+  models.User.findAll()
+    .then(function(users) {
+      res.send(JSON.stringify(users));
+    });
 });
 
 module.exports = router;

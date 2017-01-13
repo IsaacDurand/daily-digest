@@ -9,8 +9,9 @@ var express = require('express');
 var twilio = require('twilio');
 var bodyParser = require('body-parser');
 var createExampleUsers = require('./explorations/create-example-users.js');
+// var earlyApp = require('./routes/early-app.js');
+var mainApp = require('./routes/index.js');
 var models = require('./models.js');
-var router = require('./routes/index.js');
 var secrets = require('./secrets.js');
 var util = require('./util.js');
 
@@ -40,15 +41,17 @@ models.sequelize.sync({force: true})
   .then(function() {
     console.log("Tables are created. It's now safe to use them.");
 
+    // Uncomment this to see instances added to the database
+    createExampleUsers(models, secrets);
+
     // TODO: Right about here, start saving actual messages.
     // TODO: Start server here?
     server.listen(port, function() {
       console.log('Express server listening on port', port);
-      app.use('/', router);
-    });
 
-    // Uncomment this to see instances added to the database
-    // createExampleUsers(models, secrets);
+      // Here, decide which "mini-app" to use.
+      app.use('/', mainApp);
+    });
   })
   .catch(util.logError);
 
