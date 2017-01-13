@@ -22,7 +22,6 @@ models.sequelize.sync({force: true})
     // createExampleUsers(models, secrets);
 
     // TODO: Right about here, start saving actual messages.
-    // TODO: Start server here?
     server.listen(port, function() {
       console.log('Express server listening on port', port);
 

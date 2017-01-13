@@ -59,7 +59,9 @@ var Exchange = sequelize.define('exchange', {
    type: Sequelize.STRING
  },
  answerMessageSid: {
-   allowNull: false,
+   // TODO: Don't allow null unless answerText is also null?
+   //  allowNull: false,
+   defaultValue: null,
    type: Sequelize.STRING,
    validate: {
      is: /SM[0-9a-z]{32}/
