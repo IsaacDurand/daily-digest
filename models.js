@@ -1,3 +1,4 @@
+// TODO: Understand why I'm using strict mode
 "use strict";
 
 var Sequelize = require('sequelize');
