@@ -11,7 +11,7 @@ var sequelize = new Sequelize('daily_debrief', secrets.database.username,
  // Test the database connection
  sequelize.authenticate()
    .then(function(err) {
-     console.log('Connection has been established successfully.');
+     console.log('Database connection has been established successfully.');
    })
    .catch(function (err) {
      console.log('Unable to connect to the database:', err);

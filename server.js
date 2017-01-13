@@ -10,10 +10,13 @@ var twilio = require('twilio');
 var bodyParser = require('body-parser');
 var createExampleUsers = require('./explorations/create-example-users.js');
 var models = require('./models.js');
+var router = require('./routes/index.js');
 var secrets = require('./secrets.js');
 var util = require('./util.js');
 
 var app = express();
+var port = 1337;
+var server = http.createServer(app);
 
 // Basically, this client communicates with the Twilio REST API for us so that
 // we don't have to send and receive HTTP requests manually. It's a layer of
@@ -35,9 +38,17 @@ var statusCallback = '/status-update';
 // TODO: How do I get all this chaining under control?
 models.sequelize.sync({force: true})
   .then(function() {
-    console.log("\tTables are created. It's now safe to use them.");
+    console.log("Tables are created. It's now safe to use them.");
+
     // TODO: Right about here, start saving actual messages.
-    createExampleUsers(models, secrets);
+    // TODO: Start server here?
+    server.listen(port, function() {
+      console.log('Express server listening on port', port);
+      app.use('/', router);
+    });
+
+    // Uncomment this to see instances added to the database
+    // createExampleUsers(models, secrets);
   })
   .catch(util.logError);
 
@@ -55,6 +66,7 @@ models.sequelize.sync({force: true})
 //     });
 // });
 
+/*
 app.get('/', function(req, res) {
   res.sendFile('index.html', options);
 });
@@ -126,7 +138,4 @@ app.post('/sms', urlEncodedParser, function(req, res) {
   res.writeHead(200, {'Content-Type': 'text/xml'});
   res.end(twiml.toString());
 });
-
-http.createServer(app).listen(1337, function () {
-  console.log("Express server listening on port 1337");
-});
+*/
