@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     var data = JSON.stringify({message: inputEl.value});
     var request = new XMLHttpRequest();
-    request.open('POST', '/');
+    request.open('POST', '/send');
     request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     request.send(data);
     inputEl.value = '';
