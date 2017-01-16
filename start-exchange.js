@@ -2,6 +2,8 @@
 // I can run this file without the server on.
 var models = require('./models.js');
 var Exchange = models.Exchange;
+var User = models.User;
+
 var secrets = require('./secrets');
 var twilio = require('twilio');
 
@@ -11,6 +13,7 @@ var client = twilio(secrets.accountSid, secrets.authToken);
 // Eventually, I want to call this function in a more sophisticated way.
 // Forcing this sync will cause an error because I can't drop the user table
 // without first dropping the exchange table.
+// It may still delete rows, though.
 models.sequelize.sync()
   .then(function() {
     sendQuestion('How are you?', createExchange);
@@ -29,9 +32,6 @@ function printMessageInfo(err, message) {
   if (!err) console.log(message);
 }
 
-// TODO: replace printMessageInfo with a more interesting callback - one that
-// creates a new exchange record.
-
 // create exchange record
 function createExchange(err, message) {
   if (!err) {
@@ -41,7 +41,21 @@ function createExchange(err, message) {
       UserPhoneNumber: trimPhoneNumber(message.to)
     })
       .then(function(exchange) {
-        console.log(exchange);
+
+        // TODO: Fix this - update user's currentExchange
+        // TODO: Is there a simpler way to get the user we want (to follow the
+        // foreign key)?
+        User.findById(exchange.get('UserPhoneNumber'))
+          .then(function(user) {
+            if (user) {
+              var rv = user.set('CurrentExchangeId', exchange.get('id'))
+              // console.log('rv', rv); // rv is correct
+                .save()
+                .then(function(user) {
+                  console.log('Save successful');
+                });
+            }
+          });
       });
   }
 }
@@ -53,6 +67,5 @@ function trimPhoneNumber(phoneNumber) {
     rv = phoneNumber.slice(2);
   }
 
-  console.log('rv', rv);
   return rv;
 }
