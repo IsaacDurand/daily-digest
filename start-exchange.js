@@ -6,58 +6,50 @@ var User = models.User;
 
 var secrets = require('./secrets');
 var twilio = require('twilio');
+var util = require('./util.js');
 
 // TODO: Move client creation to a separate module?
 var client = twilio(secrets.accountSid, secrets.authToken);
 
+// **This is the core of the script.**
+// Annoyingly, twilio-node uses Q
+// (http://twilio.github.io/twilio-node/#callbacks), while Sequelize uses
+// Bluebird
+// (http://docs.sequelizejs.com/en/latest/docs/getting-started/#promises).
 // Eventually, I want to call this function in a more sophisticated way.
 // Forcing this sync will cause an error because I can't drop the user table
 // without first dropping the exchange table.
 // It may still delete rows, though.
-models.sequelize.sync()
+models.sequelize.sync() // returns Bluebird promise
   .then(function() {
-    sendQuestion('How are you?', createExchange);
-  });
+    return sendQuestion('How are you?'); // Q promise?
+  })
+  .then(createExchange) // returns Bluebird promise
+  .then(updateUser) // returns Bluebird promise
+  .then(function(user) {
+    console.log('SUCCESS: message and exchange created, user updated.');
+  })
+  // TODO: Does this catch errors correctly?
+  .catch(util.logError);
 
-// send SMS
-function sendQuestion(question, callback) {
-  client.messages.create({
+
+// **Helper functions**
+// Create a new exchange record for an SMS
+function createExchange(message) {
+  return Exchange.create({
+    questionText: message.body,
+    questionMessageSid: message.sid,
+    UserPhoneNumber: trimPhoneNumber(message.to)
+  });
+}
+
+// Send an SMS via Twilio
+function sendQuestion(question) {
+  return client.messages.create({
     to: secrets.myMobileNumber,
     from: secrets.myTwilioNumber,
     body: question
-  }, callback);
-}
-
-function printMessageInfo(err, message) {
-  if (!err) console.log(message);
-}
-
-// create exchange record
-function createExchange(err, message) {
-  if (!err) {
-    Exchange.create({
-      questionText: message.body,
-      questionMessageSid: message.sid,
-      UserPhoneNumber: trimPhoneNumber(message.to)
-    })
-      .then(function(exchange) {
-
-        // TODO: Fix this - update user's currentExchange
-        // TODO: Is there a simpler way to get the user we want (to follow the
-        // foreign key)?
-        User.findById(exchange.get('UserPhoneNumber'))
-          .then(function(user) {
-            if (user) {
-              var rv = user.set('CurrentExchangeId', exchange.get('id'))
-              // console.log('rv', rv); // rv is correct
-                .save()
-                .then(function(user) {
-                  console.log('Save successful');
-                });
-            }
-          });
-      });
-  }
+  });
 }
 
 function trimPhoneNumber(phoneNumber) {
@@ -68,4 +60,14 @@ function trimPhoneNumber(phoneNumber) {
   }
 
   return rv;
+}
+
+// TODO: Is there a simpler way to get the user we want (to follow the
+// foreign key)?
+// Update the CurrentExchangeId of the user associated with this exchange
+function updateUser(exchange) {
+  return User.findById(exchange.get('UserPhoneNumber')) // Bluebird promise
+    .then(function(user) {
+      return user.set('CurrentExchangeId', exchange.get('id')).save();
+    });
 }
