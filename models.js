@@ -72,6 +72,7 @@ var Exchange = sequelize.define('exchange', {
 // Useful: http://docs.sequelizejs.com/en/latest/docs/associations/
 // TODO: Is there any way for me to see the related user's name in the Exchange
 // table rather than their phone number?
+// This adds a UserPhoneNumber column to the exchange table.
 Exchange.belongsTo(User, {
  foreignKey: {
    name: 'UserPhoneNumber',
@@ -80,6 +81,9 @@ Exchange.belongsTo(User, {
 });
 
 // TODO: Understand constraints better.
+// Without "constraints: false", I get this error:
+// Unhandled rejection Error: Cyclic dependency found. users is dependent of itself.
+// Dependency chain: users -> exchanges => users
 // TODO: What SQL is being generated here? In Terminal, I'm seeing the SQL
 // statements for inserting rows, but I'm not seeing the table creation.
 User.belongsTo(Exchange, {

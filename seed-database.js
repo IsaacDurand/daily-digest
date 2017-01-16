@@ -8,20 +8,17 @@ var myData = {
   phoneNumber: secrets.myMobileNumberShort
 };
 
-// TODO: Why can't I drop this table?
-// User.drop()
-//   .then(function(result) {
-//     console.log('Table dropped', result);
-//   });
-
-User.findOne({where: myData})
-  .then(function(user) {
-    if (user) {
-      console.log('You are already in the table');
-    } else {
-      User.create(myData)
-        .then(function(user) {
-          if (user) console.log('You have been added to the table.');
-        });
-    }
+models.sequelize.sync()
+  .then(function() {
+    User.findOne({where: myData})
+      .then(function(user) {
+        if (user) {
+          console.log('You are already in the table');
+        } else {
+          User.create(myData)
+            .then(function(user) {
+              if (user) console.log('You have been added to the table.');
+            });
+        }
+      });
   });
