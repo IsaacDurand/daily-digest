@@ -38,6 +38,8 @@ var User = sequelize.define('user', {
 var Exchange = sequelize.define('exchange', {
  date: {
    type: Sequelize.DATEONLY,
+   // TODO: Address timezones? A message sent on the evening of 1/15 Pacific
+   // time should not have a date of 1/16.
    defaultValue: Sequelize.NOW
  },
  // TODO: Think about whether it makes sense to use foreign keys here
@@ -60,8 +62,6 @@ var Exchange = sequelize.define('exchange', {
  },
  answerMessageSid: {
    // TODO: Don't allow null unless answerText is also null?
-   //  allowNull: false,
-   defaultValue: null,
    type: Sequelize.STRING,
    validate: {
      is: /SM[0-9a-z]{32}/

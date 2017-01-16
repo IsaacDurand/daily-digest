@@ -8,17 +8,10 @@ var twilio = require('twilio');
 // TODO: Move client creation to a separate module?
 var client = twilio(secrets.accountSid, secrets.authToken);
 
-// TODO: Fix this
-// Why am I going back and forth between
-// ER_BAD_NULL_ERROR: Column 'answerMessageSid' cannot be null
-// and
-// ER_NO_DEFAULT_FOR_FIELD: Field 'answerMessageSid' doesn't have a default value?
-
-// Forcing the sync adds a new error:
-// ER_NO_REFERENCED_ROW_2: Cannot add or update a child row: a foreign key constraint fails (`daily_debrief`.`exchanges`, CONSTRAINT `exchanges_ibfk_1` FOREIGN KEY (`UserPhoneNumber`) REFERENCES `users` (`phoneNumber`) ON DELETE NO ACTION ON UPDATE CASCADE
-
 // Eventually, I want to call this function in a more sophisticated way.
-models.sequelize.sync({force: true})
+// Forcing this sync will cause an error because I can't drop the user table
+// without first dropping the exchange table.
+models.sequelize.sync()
   .then(function() {
     sendQuestion('How are you?', createExchange);
   });
