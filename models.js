@@ -57,6 +57,11 @@ var Exchange = sequelize.define('exchange', {
      is: /SM[a-z0-9]{32}/
    }
  },
+// TODO: Limit the allowed values for this column to the posible Twilio statuses
+// TODO: Add default value?
+ questionMessageStatus: {
+   type: Sequelize.STRING
+ },
  answerText: {
    type: Sequelize.STRING
  },
@@ -84,6 +89,8 @@ Exchange.belongsTo(User, {
 // Without "constraints: false", I get this error:
 // Unhandled rejection Error: Cyclic dependency found. users is dependent of itself.
 // Dependency chain: users -> exchanges => users
+// Does "constraints: false" allow me to delete an exchange even if there is a
+// user whose CurrentExchangeId points to that exchange?
 // TODO: What SQL is being generated here? In Terminal, I'm seeing the SQL
 // statements for inserting rows, but I'm not seeing the table creation.
 User.belongsTo(Exchange, {

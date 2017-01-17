@@ -12,9 +12,9 @@ var app = express();
 var port = 1337;
 var server = http.createServer(app);
 
-// TODO: remove the force option if I don't want to delete the table
-// TODO: How do I get all this chaining under control?
-models.sequelize.sync({force: true})
+// Forcing a sync here will drop both tables. (I assume it drops the exchange
+// table first, since the exchange table depends on the user table.)
+models.sequelize.sync()
   .then(function() {
     console.log("Tables are created. It's now safe to use them.");
 
@@ -26,7 +26,7 @@ models.sequelize.sync({force: true})
       console.log('Express server listening on port', port);
 
       // Here, decide which "mini-app" to use.
-      app.use('/', earlyApp);
+      app.use('/', mainApp);
     });
   })
   .catch(util.logError);

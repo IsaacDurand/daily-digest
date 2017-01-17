@@ -29,7 +29,6 @@ models.sequelize.sync() // returns Bluebird promise
   .then(function(user) {
     console.log('SUCCESS: message and exchange created, user updated.');
   })
-  // TODO: Does this catch errors correctly?
   .catch(util.logError);
 
 
@@ -48,10 +47,12 @@ function sendQuestion(question) {
   return client.messages.create({
     to: secrets.myMobileNumber,
     from: secrets.myTwilioNumber,
-    body: question
+    body: question,
+    statusCallback: secrets.ngrokUrl + secrets.statusPath
   });
 }
 
+// TODO: Move to util
 function trimPhoneNumber(phoneNumber) {
   var rv = '';
 

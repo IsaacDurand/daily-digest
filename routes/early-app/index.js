@@ -67,7 +67,9 @@ router.post('/send', jsonParser, function(req, res) {
 router.post('/sms', urlEncodedParser, function(req, res) {
 
   if (req.body) {
-    record = req.body.SmsSid + '\n' + req.body.Body + '\n' +
+    // SmsSid is deprecated:
+// https://www.twilio.com/docs/api/twiml/sms/twilio_request#request-parameters
+    record = req.body.MessageSid + '\n' + req.body.Body + '\n' +
       JSON.stringify(req.body) + '\n\n';
     fs.appendFile(inboundMsgDb, record);
   }
@@ -86,9 +88,8 @@ router.post(statusPath, urlEncodedParser, function(req, res) {
   if (!req.body) return res.sendStatus(400);
 
   // What is the difference between SmsStatus and MessageStatus?
-  // What about SmsSid vs. MessageSid?
   if (req.body.SmsStatus === 'delivered') {
-    record = req.body.SmsSid + '\n' + JSON.stringify(req.body) + '\n\n';
+    record = req.body.MessageSid + '\n' + JSON.stringify(req.body) + '\n\n';
     fs.appendFile(statusDatabase, record);
   }
   res.sendStatus(200);
