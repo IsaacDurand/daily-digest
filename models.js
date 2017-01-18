@@ -19,6 +19,7 @@ var sequelize = new Sequelize('daily_debrief', secrets.database.username,
 
 // Database
 // TODO: Turn off database logging in Terminal if I don't want it.
+// TODO: Add timezone
 // Define a user model
 var User = sequelize.define('user', {
   name: {

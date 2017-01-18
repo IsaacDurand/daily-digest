@@ -38,7 +38,7 @@ function createExchange(message) {
   return Exchange.create({
     questionText: message.body,
     questionMessageSid: message.sid,
-    UserPhoneNumber: trimPhoneNumber(message.to)
+    UserPhoneNumber: util.trimPhoneNumber(message.to)
   });
 }
 
@@ -50,17 +50,6 @@ function sendQuestion(question) {
     body: question,
     statusCallback: secrets.ngrokUrl + secrets.statusPath
   });
-}
-
-// TODO: Move to util
-function trimPhoneNumber(phoneNumber) {
-  var rv = '';
-
-  if (phoneNumber.length === 12 && phoneNumber.slice(0, 2) === '+1') {
-    rv = phoneNumber.slice(2);
-  }
-
-  return rv;
 }
 
 // TODO: Is there a simpler way to get the user we want (to follow the
