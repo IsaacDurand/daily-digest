@@ -24,7 +24,14 @@ router.get('/', function(req, res) {
 });
 
 router.post(secrets.statusPath, urlEncodedParser, function(req, res) {
+
+  // I imagine I will receive this status update before I receive the user's
+  // answer, but I'm honestly not sure.
   updateExchange.saveStatus(req.body.MessageSid, req.body.MessageStatus)
+
+    // Should I take a moment here to make a request to the messages API and log
+    // the date_sent? That seems like more trouble than it's worth, and I might
+    // not receive a response before I receive the user's answer.
     .then(function(exchange) {
       return res.sendStatus(200); // a server response.
       // As demonstrated below, server responses seem to be thenable.
@@ -40,17 +47,22 @@ router.post(secrets.statusPath, urlEncodedParser, function(req, res) {
 });
 
 router.post('/answer', urlEncodedParser, function(req, res) {
+
+  // TODO: note when answer was received and compare it to when question
+  // delivery notification was received
+  // I could make a request to the messages API and log the date_created, but
+  // that might be more trouble than it's worth, and I might receive another
+  // answer from the user before I receive the API's response.
   var message = req.body;
   var shortPhoneNumber = util.trimPhoneNumber(message.From);
   updateExchange.getCurrent(shortPhoneNumber)
+    // TODO: Call isOrderCorrect?
     .then(function(exchangeId) {
       return updateExchange.saveAnswer(exchangeId, message)
     })
     .then(function(exchange) {
       // TODO: Do I have to send an SMS in response to the one Twilio receives?
       return res.send(thankYou);
-      // return res.send('Will I get this in an SMS?'); // No, it's not valid Twiml.
-      // return res.sendStatus(200); // sends me an SMS with the body 'OK'
     })
     .then(function(res) {
       console.log('SUCCESS: Exchange updated and HTTP response sent to Twilio');

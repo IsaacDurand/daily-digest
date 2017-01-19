@@ -43,6 +43,9 @@ var Exchange = sequelize.define('exchange', {
    // time should not have a date of 1/16.
    defaultValue: Sequelize.NOW
  },
+ questionDeliveryConfirmedAt: {
+   type: Sequelize.DATE
+ },
  // TODO: Think about whether it makes sense to use foreign keys here
  //(especially for questions, which will be repeated)
  // I don't want questionText to be null, but I suppose it's possible that I

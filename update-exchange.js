@@ -9,11 +9,20 @@ var updateExchange = {};
 var models = require('./models.js');
 var Exchange = models.Exchange;
 var User = models.User;
+var Sequelize = models.Sequelize;
 
 updateExchange.saveStatus = function saveStatus(questionMessageSid, status) {
+
+  // TODO: Replace 'now' with a valid timestampe
+  // (Sequelize.NOW() is a function, and it returns an object.)
+  if (status === 'delivered') var notificationDate = 'now';
   return Exchange.findOne({where: {questionMessageSid: questionMessageSid}})
     .then(function(exchange) {
-      return exchange.set('questionMessageStatus', status).save();
+      var newValues = {questionMessageStatus: status}
+      if (status === 'delivered') {
+        // newValues.questionDeliveryConfirmedAt = notificationDate;
+      }
+      return exchange.set(newValues).save();
     });
 }
 
