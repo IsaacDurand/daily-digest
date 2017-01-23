@@ -15,28 +15,33 @@ updateExchange.saveStatus = function saveStatus(questionMessageSid, status) {
 
   // TODO: Replace 'now' with a valid timestampe
   // (Sequelize.NOW() is a function, and it returns an object.)
-  if (status === 'delivered') var notificationDate = 'now';
+  if (status === 'delivered') var notificationDate = Date.now();
   return Exchange.findOne({where: {questionMessageSid: questionMessageSid}})
     .then(function(exchange) {
       var newValues = {questionMessageStatus: status}
       if (status === 'delivered') {
-        // newValues.questionDeliveryConfirmedAt = notificationDate;
+        newValues.questionDeliveryConfirmedAt = notificationDate;
       }
       return exchange.set(newValues).save();
     });
 }
 
-updateExchange.saveAnswer = function saveAnswer(exchangeId, answerMessage) {
+updateExchange.saveAnswer = function saveAnswer(exchangeId, answerMessage,
+  answerReceivedAt) {
   return Exchange.findById(exchangeId)
     .then(function(exchange) {
       var newValues = {
         answerText: answerMessage.Body,
         answerMessageSid: answerMessage.MessageSid
       };
-      return exchange.set(newValues).save();
+      // TODO: Does it make sense for this check to be in a separate function?
+      if (exchange.questionDeliveryConfirmedAt < answerReceivedAt) {
+          return exchange.set(newValues).save();
+        } else {
+          throw new Error('Answer was received before question delivery was confirmed');
+          // TODO: Save orphan message?
+        }
     })
-  // answerText
-  // answerMessageSid
 }
 
 updateExchange.getCurrent = function getCurrent(userPhoneNumber) {
@@ -44,12 +49,6 @@ updateExchange.getCurrent = function getCurrent(userPhoneNumber) {
     .then(function(user) {
       return user.get('CurrentExchangeId');
     })
-}
-
-// TODO: Flesh this out and incorporate it into /answer route
-updateExchange.isOrderCorrect = function isOrderCorrect(exchangeId, answerSendTime) {
-  // Find the exchange and compare the time its question was delivered to the
-  // time the answer was received
 }
 
 module.exports = updateExchange;

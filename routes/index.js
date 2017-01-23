@@ -47,6 +47,7 @@ router.post(secrets.statusPath, urlEncodedParser, function(req, res) {
 });
 
 router.post('/answer', urlEncodedParser, function(req, res) {
+  var answerReceivedAt = Date.now();
 
   // TODO: note when answer was received and compare it to when question
   // delivery notification was received
@@ -58,7 +59,7 @@ router.post('/answer', urlEncodedParser, function(req, res) {
   updateExchange.getCurrent(shortPhoneNumber)
     // TODO: Call isOrderCorrect?
     .then(function(exchangeId) {
-      return updateExchange.saveAnswer(exchangeId, message)
+      return updateExchange.saveAnswer(exchangeId, message, answerReceivedAt)
     })
     .then(function(exchange) {
       // TODO: Do I have to send an SMS in response to the one Twilio receives?
