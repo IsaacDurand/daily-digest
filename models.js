@@ -35,7 +35,6 @@ var User = sequelize.define('user', {
  }
 });
 
-// TODO: Define an exchange model
 var Exchange = sequelize.define('exchange', {
  date: {
    type: Sequelize.DATEONLY,
@@ -77,6 +76,25 @@ var Exchange = sequelize.define('exchange', {
    }
  }
 });
+
+var AdditionalAnswer = sequelize.define('additionalAnswer', {
+  // TODO: DRY up by consolidating with SID fields above (or at least putting
+  // the regular expression in a variable)?
+  messageSid: {
+    allowNull: false,
+    type: Sequelize.STRING,
+    validate: {
+      is: /SM[a-z0-9]{32}/
+    }
+  },
+  text: {
+    type: Sequelize.STRING
+  }
+});
+
+AdditionalAnswer.belongsTo(AdditionalAnswer, {as: 'next'});
+
+Exchange.belongsTo(AdditionalAnswer);
 
 // Useful: http://docs.sequelizejs.com/en/latest/docs/associations/
 // TODO: Is there any way for me to see the related user's name in the Exchange
